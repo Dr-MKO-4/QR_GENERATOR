@@ -155,144 +155,6 @@ def create_qr_code(url, size=10):
         print(f"Erreur création QR: {e}")
         return None
 
-@app.route('/')
-def index():
-    """Page d'accueil avec formulaire d'upload"""
-    return render_template('index.html')
-
-@app.route('/upload', methods=['POST'])
-def upload_image():
-    """Traite l'upload d'image et génère le QR code"""
-    try:
-        if 'image' not in request.files:
-            return jsonify({'error': 'Aucun fichier sélectionné'}), 400
-        
-        file = request.files['image']
-        if file.filename == '':
-            return jsonify({'error': 'Aucun fichier sélectionné'}), 400
-        
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'Format de fichier non supporté'}), 400
-        
-        # Nettoyer les anciennes images
-        clean_old_images()
-        
-        # Générer un ID unique
-        image_id = str(uuid.uuid4())
-        
-        # Optimiser l'image
-        optimized_image = optimize_image(file, max_size_kb=500)
-        
-        # Sauvegarder l'image optimisée
-        image_filename = f"{image_id}.jpg"
-        image_path = os.path.join(IMAGES_DIR, image_filename)
-        
-        with open(image_path, 'wb') as f:
-            f.write(optimized_image.read())
-        
-        # Créer l'URL de visualisation
-        view_url = url_for('view_image', image_id=image_id, _external=True)
-        
-        # Générer le QR code
-        qr_image = create_qr_code(view_url)
-        if qr_image:
-            qr_filename = f"qr_{image_id}.png"
-            qr_path = os.path.join(QR_DIR, qr_filename)
-            qr_image.save(qr_path)
-        else:
-            return jsonify({'error': 'Erreur lors de la génération du QR code'}), 500
-        
-        # Sauvegarder les métadonnées
-        data = load_image_data()
-        data[image_id] = {
-            'original_name': secure_filename(file.filename),
-            'image_path': image_path,
-            'qr_path': qr_path,
-            'upload_time': datetime.now().isoformat(),
-            'view_url': view_url,
-            'file_size': os.path.getsize(image_path)
-        }
-        save_image_data(data)
-        
-        return jsonify({
-            'success': True,
-            'image_id': image_id,
-            'view_url': view_url,
-            'qr_url': url_for('serve_qr', image_id=image_id, _external=True),
-            'download_qr_url': url_for('download_qr', image_id=image_id, _external=True)
-        })
-        
-    except Exception as e:
-        print(f"Erreur upload: {e}")
-        return jsonify({'error': 'Erreur lors du traitement de l\'image'}), 500
-
-@app.route('/view/<image_id>')
-def view_image(image_id):
-    """Affiche l'image dans une page web"""
-    data = load_image_data()
-    if image_id not in data:
-        return "Image non trouvée ou expirée", 404
-    
-    image_info = data[image_id]
-    return render_template('view_image.html', 
-                         image_id=image_id,
-                         image_info=image_info)
-
-@app.route('/image/<image_id>')
-def serve_image(image_id):
-    """Sert l'image directement"""
-    data = load_image_data()
-    if image_id not in data:
-        return "Image non trouvée", 404
-    
-    image_path = data[image_id]['image_path']
-    if not os.path.exists(image_path):
-        return "Fichier non trouvé", 404
-    
-    return send_file(image_path)
-
-@app.route('/qr/<image_id>')
-def serve_qr(image_id):
-    """Sert le QR code directement"""
-    data = load_image_data()
-    if image_id not in data:
-        return "QR code non trouvé", 404
-    
-    qr_path = data[image_id]['qr_path']
-    if not os.path.exists(qr_path):
-        return "QR code non trouvé", 404
-    
-    return send_file(qr_path)
-
-@app.route('/download-qr/<image_id>')
-def download_qr(image_id):
-    """Télécharge le QR code"""
-    data = load_image_data()
-    if image_id not in data:
-        return "QR code non trouvé", 404
-    
-    qr_path = data[image_id]['qr_path']
-    if not os.path.exists(qr_path):
-        return "QR code non trouvé", 404
-    
-    return send_file(qr_path, as_attachment=True, 
-                    download_name=f"qr_code_{image_id}.png")
-
-@app.route('/stats')
-def stats():
-    """Page de statistiques"""
-    data = load_image_data()
-    total_images = len(data)
-    total_size = sum(info.get('file_size', 0) for info in data.values())
-    
-    return jsonify({
-        'total_images': total_images,
-        'total_size_mb': round(total_size / (1024 * 1024), 2),
-        'platform_status': 'active'
-    })
-
-# Templates HTML intégrés
-@app.before_first_request
 def create_templates():
     """Crée les templates HTML"""
     os.makedirs('templates', exist_ok=True)
@@ -740,6 +602,145 @@ def create_templates():
 
     with open('templates/view_image.html', 'w', encoding='utf-8') as f:
         f.write(view_html)
+
+# Créer les templates au démarrage de l'application
+create_templates()
+
+@app.route('/')
+def index():
+    """Page d'accueil avec formulaire d'upload"""
+    return render_template('index.html')
+
+@app.route('/upload', methods=['POST'])
+def upload_image():
+    """Traite l'upload d'image et génère le QR code"""
+    try:
+        if 'image' not in request.files:
+            return jsonify({'error': 'Aucun fichier sélectionné'}), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({'error': 'Aucun fichier sélectionné'}), 400
+        
+        if not allowed_file(file.filename):
+            return jsonify({'error': 'Format de fichier non supporté'}), 400
+        
+        # Nettoyer les anciennes images
+        clean_old_images()
+        
+        # Générer un ID unique
+        image_id = str(uuid.uuid4())
+        
+        # Optimiser l'image
+        optimized_image = optimize_image(file, max_size_kb=500)
+        
+        # Sauvegarder l'image optimisée
+        image_filename = f"{image_id}.jpg"
+        image_path = os.path.join(IMAGES_DIR, image_filename)
+        
+        with open(image_path, 'wb') as f:
+            f.write(optimized_image.read())
+        
+        # Créer l'URL de visualisation
+        view_url = url_for('view_image', image_id=image_id, _external=True)
+        
+        # Générer le QR code
+        qr_image = create_qr_code(view_url)
+        if qr_image:
+            qr_filename = f"qr_{image_id}.png"
+            qr_path = os.path.join(QR_DIR, qr_filename)
+            qr_image.save(qr_path)
+        else:
+            return jsonify({'error': 'Erreur lors de la génération du QR code'}), 500
+        
+        # Sauvegarder les métadonnées
+        data = load_image_data()
+        data[image_id] = {
+            'original_name': secure_filename(file.filename),
+            'image_path': image_path,
+            'qr_path': qr_path,
+            'upload_time': datetime.now().isoformat(),
+            'view_url': view_url,
+            'file_size': os.path.getsize(image_path)
+        }
+        save_image_data(data)
+        
+        return jsonify({
+            'success': True,
+            'image_id': image_id,
+            'view_url': view_url,
+            'qr_url': url_for('serve_qr', image_id=image_id, _external=True),
+            'download_qr_url': url_for('download_qr', image_id=image_id, _external=True)
+        })
+        
+    except Exception as e:
+        print(f"Erreur upload: {e}")
+        return jsonify({'error': 'Erreur lors du traitement de l\'image'}), 500
+
+@app.route('/view/<image_id>')
+def view_image(image_id):
+    """Affiche l'image dans une page web"""
+    data = load_image_data()
+    if image_id not in data:
+        return "Image non trouvée ou expirée", 404
+    
+    image_info = data[image_id]
+    return render_template('view_image.html', 
+                         image_id=image_id,
+                         image_info=image_info)
+
+@app.route('/image/<image_id>')
+def serve_image(image_id):
+    """Sert l'image directement"""
+    data = load_image_data()
+    if image_id not in data:
+        return "Image non trouvée", 404
+    
+    image_path = data[image_id]['image_path']
+    if not os.path.exists(image_path):
+        return "Fichier non trouvé", 404
+    
+    return send_file(image_path)
+
+@app.route('/qr/<image_id>')
+def serve_qr(image_id):
+    """Sert le QR code directement"""
+    data = load_image_data()
+    if image_id not in data:
+        return "QR code non trouvé", 404
+    
+    qr_path = data[image_id]['qr_path']
+    if not os.path.exists(qr_path):
+        return "QR code non trouvé", 404
+    
+    return send_file(qr_path)
+
+@app.route('/download-qr/<image_id>')
+def download_qr(image_id):
+    """Télécharge le QR code"""
+    data = load_image_data()
+    if image_id not in data:
+        return "QR code non trouvé", 404
+    
+    qr_path = data[image_id]['qr_path']
+    if not os.path.exists(qr_path):
+        return "QR code non trouvé", 404
+    
+    return send_file(qr_path, as_attachment=True, 
+                    download_name=f"qr_code_{image_id}.png")
+
+@app.route('/stats')
+def stats():
+    """Page de statistiques"""
+    data = load_image_data()
+    total_images = len(data)
+    total_size = sum(info.get('file_size', 0) for info in data.values())
+    
+    return jsonify({
+        'total_images': total_images,
+        'total_size_mb': round(total_size / (1024 * 1024), 2),
+        'platform_status': 'active'
+    })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
