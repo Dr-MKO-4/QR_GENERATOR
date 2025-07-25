@@ -92,48 +92,72 @@ def clean_old_images():
 def optimize_image(image_file, max_size_kb=500):
     """Optimise une image pour réduire sa taille"""
     try:
+        print(f"Début optimisation, taille max: {max_size_kb}KB")
+        
+        # Reset file pointer et lire l'image
+        image_file.seek(0)
         img = Image.open(image_file)
+        print(f"Image originale: {img.size}, mode: {img.mode}")
         
         # Convertir en RGB si nécessaire
         if img.mode in ('RGBA', 'LA', 'P'):
+            print(f"Conversion du mode {img.mode} vers RGB")
             background = Image.new('RGB', img.size, (255, 255, 255))
             if img.mode == 'P':
                 img = img.convert('RGBA')
-            background.paste(img, mask=img.split()[-1] if img.mode == 'RGBA' else None)
+            if img.mode in ('RGBA', 'LA'):
+                background.paste(img, mask=img.split()[-1] if len(img.split()) > 3 else None)
             img = background
         
-        # Calculer la taille optimale
-        output = io.BytesIO()
-        img.save(output, format='JPEG', quality=85, optimize=True)
-        current_size = len(output.getvalue()) / 1024  # KB
+        # Redimensionner si l'image est trop grande
+        max_dimension = 1920
+        if img.width > max_dimension or img.height > max_dimension:
+            print(f"Redimensionnement de {img.size}")
+            ratio = min(max_dimension / img.width, max_dimension / img.height)
+            new_size = (int(img.width * ratio), int(img.height * ratio))
+            img = img.resize(new_size, Image.Resampling.LANCZOS)
+            print(f"Nouvelle taille: {img.size}")
         
-        if current_size <= max_size_kb:
-            output.seek(0)
-            return output
-        
-        # Redimensionner si trop grande
-        ratio = (max_size_kb / current_size) ** 0.5
-        new_width = int(img.width * ratio)
-        new_height = int(img.height * ratio)
-        
-        img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
-        
-        # Essayer différentes qualités
-        for quality in [75, 65, 55, 45]:
+        # Essayer différentes qualités JPEG
+        for quality in [85, 75, 65, 55, 45, 35]:
             output = io.BytesIO()
-            img_resized.save(output, format='JPEG', quality=quality, optimize=True)
-            if len(output.getvalue()) / 1024 <= max_size_kb:
+            img.save(output, format='JPEG', quality=quality, optimize=True)
+            current_size_kb = len(output.getvalue()) / 1024
+            print(f"Qualité {quality}: {current_size_kb:.1f}KB")
+            
+            if current_size_kb <= max_size_kb:
                 output.seek(0)
+                print(f"Optimisation réussie: {current_size_kb:.1f}KB")
+                return output
+        
+        # Si toujours trop grande, réduire encore la taille
+        for scale in [0.8, 0.6, 0.4]:
+            new_size = (int(img.width * scale), int(img.height * scale))
+            img_scaled = img.resize(new_size, Image.Resampling.LANCZOS)
+            
+            output = io.BytesIO()
+            img_scaled.save(output, format='JPEG', quality=30, optimize=True)
+            current_size_kb = len(output.getvalue()) / 1024
+            print(f"Échelle {scale}: {current_size_kb:.1f}KB")
+            
+            if current_size_kb <= max_size_kb:
+                output.seek(0)
+                print(f"Optimisation réussie avec mise à l'échelle: {current_size_kb:.1f}KB")
                 return output
         
         # Dernière tentative avec qualité minimale
         output = io.BytesIO()
-        img_resized.save(output, format='JPEG', quality=30, optimize=True)
+        img.save(output, format='JPEG', quality=20, optimize=True)
         output.seek(0)
+        final_size_kb = len(output.getvalue()) / 1024
+        print(f"Optimisation finale: {final_size_kb:.1f}KB")
         return output
         
     except Exception as e:
         print(f"Erreur optimisation: {e}")
+        import traceback
+        traceback.print_exc()
+        # En cas d'erreur, retourner le fichier original
         image_file.seek(0)
         return image_file
 
@@ -207,6 +231,11 @@ def create_templates():
             transition: all 0.3s ease;
             cursor: pointer;
             margin-bottom: 30px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         .upload-zone:hover {
             border-color: #764ba2;
@@ -331,7 +360,8 @@ def create_templates():
                 <div class="upload-icon">📷</div>
                 <div class="upload-text">
                     Cliquez ici ou glissez votre image<br>
-                    <small>Formats supportés: JPG, PNG, GIF, BMP, WebP (Max 10MB)</small>
+                    <small>Formats supportés: JPG, PNG, GIF, BMP, WebP (Max 10MB)<br>
+                    📱 Fonctionne sur mobile et ordinateur</small>
                 </div>
                 <button class="btn">Choisir une image</button>
             </div>
@@ -428,6 +458,8 @@ def create_templates():
         function handleFile(file) {
             hideError();
             
+            console.log('Traitement du fichier:', file.name, 'Taille:', file.size, 'Type:', file.type);
+            
             // Vérifications
             if (!file.type.startsWith('image/')) {
                 showError('Veuillez sélectionner un fichier image valide.');
@@ -447,13 +479,22 @@ def create_templates():
             const formData = new FormData();
             formData.append('image', file);
 
+            console.log('Envoi de la requête...');
+
             // Envoyer la requête
             fetch('/upload', {
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Réponse reçue:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Données reçues:', data);
                 progress.style.display = 'none';
                 
                 if (data.success) {
@@ -462,14 +503,17 @@ def create_templates():
                     document.getElementById('viewLink').href = data.view_url;
                     document.getElementById('downloadQrLink').href = data.download_qr_url;
                     result.style.display = 'block';
+                    
+                    console.log('Upload réussi!');
                 } else {
+                    console.error('Erreur serveur:', data.error);
                     showError(data.error || 'Erreur lors du traitement de l\'image.');
                 }
             })
             .catch(error => {
+                console.error('Erreur:', error);
                 progress.style.display = 'none';
-                showError('Erreur de connexion. Veuillez réessayer.');
-                console.error('Error:', error);
+                showError('Erreur de connexion. Vérifiez votre connexion et réessayez.');
             });
         }
     </script>
@@ -615,42 +659,62 @@ def index():
 def upload_image():
     """Traite l'upload d'image et génère le QR code"""
     try:
+        print("=== DEBUT UPLOAD ===")
+        print(f"Files reçus: {list(request.files.keys())}")
+        print(f"Form data: {list(request.form.keys())}")
+        
         if 'image' not in request.files:
+            print("ERREUR: Aucun fichier 'image' dans la requête")
             return jsonify({'error': 'Aucun fichier sélectionné'}), 400
         
         file = request.files['image']
+        print(f"Fichier reçu: {file.filename}, taille: {file.content_length}")
+        
         if file.filename == '':
+            print("ERREUR: Nom de fichier vide")
             return jsonify({'error': 'Aucun fichier sélectionné'}), 400
         
         if not allowed_file(file.filename):
-            return jsonify({'error': 'Format de fichier non supporté'}), 400
+            print(f"ERREUR: Extension non autorisée pour {file.filename}")
+            return jsonify({'error': 'Format de fichier non supporté. Utilisez: PNG, JPG, JPEG, GIF, BMP, WebP'}), 400
         
         # Nettoyer les anciennes images
         clean_old_images()
         
         # Générer un ID unique
         image_id = str(uuid.uuid4())
+        print(f"ID généré: {image_id}")
         
         # Optimiser l'image
+        print("Optimisation de l'image...")
+        file.seek(0)  # Reset file pointer
         optimized_image = optimize_image(file, max_size_kb=500)
         
         # Sauvegarder l'image optimisée
         image_filename = f"{image_id}.jpg"
         image_path = os.path.join(IMAGES_DIR, image_filename)
+        print(f"Sauvegarde vers: {image_path}")
         
         with open(image_path, 'wb') as f:
+            optimized_image.seek(0)
             f.write(optimized_image.read())
+        
+        print(f"Image sauvegardée, taille: {os.path.getsize(image_path)} bytes")
         
         # Créer l'URL de visualisation
         view_url = url_for('view_image', image_id=image_id, _external=True)
+        print(f"URL de visualisation: {view_url}")
         
         # Générer le QR code
+        print("Génération du QR code...")
         qr_image = create_qr_code(view_url)
         if qr_image:
             qr_filename = f"qr_{image_id}.png"
             qr_path = os.path.join(QR_DIR, qr_filename)
             qr_image.save(qr_path)
+            print(f"QR code sauvegardé: {qr_path}")
         else:
+            print("ERREUR: Impossible de générer le QR code")
             return jsonify({'error': 'Erreur lors de la génération du QR code'}), 500
         
         # Sauvegarder les métadonnées
@@ -664,18 +728,23 @@ def upload_image():
             'file_size': os.path.getsize(image_path)
         }
         save_image_data(data)
+        print("Métadonnées sauvegardées")
         
-        return jsonify({
+        response_data = {
             'success': True,
             'image_id': image_id,
             'view_url': view_url,
             'qr_url': url_for('serve_qr', image_id=image_id, _external=True),
             'download_qr_url': url_for('download_qr', image_id=image_id, _external=True)
-        })
+        }
+        print(f"=== UPLOAD REUSSI === {response_data}")
+        return jsonify(response_data)
         
     except Exception as e:
-        print(f"Erreur upload: {e}")
-        return jsonify({'error': 'Erreur lors du traitement de l\'image'}), 500
+        print(f"ERREUR UPLOAD: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': f'Erreur lors du traitement: {str(e)}'}), 500
 
 @app.route('/view/<image_id>')
 def view_image(image_id):
@@ -729,8 +798,10 @@ def download_qr(image_id):
     return send_file(qr_path, as_attachment=True, 
                     download_name=f"qr_code_{image_id}.png")
 
-@app.route('/stats')
-def stats():
+@app.route('/favicon.ico')
+def favicon():
+    """Serve a simple favicon to avoid 404 errors"""
+    return '', 204
     """Page de statistiques"""
     data = load_image_data()
     total_images = len(data)
