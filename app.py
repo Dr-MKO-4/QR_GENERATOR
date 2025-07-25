@@ -185,180 +185,223 @@ def create_templates():
     os.makedirs('templates', exist_ok=True)
     
     # Template principal
-    index_html = '''<!DOCTYPE html>
-<!-- templates/index.html -->
+    index_html = '''<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Image Platform - Convertisseur d'Images en QR Code</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>QR Image Platform</title>
   <style>
     :root {
+      /* Couleurs Light */
+      --bg: #f0f2f5;
+      --surface: #fff;
+      --text: #333;
       --primary: #5a67d8;
-      --primary-dark: #4c51bf;
-      --background: #f7fafc;
-      --surface: #ffffff;
-      --text: #2d3748;
       --accent: #ed64a6;
       --radius: 12px;
       --transition: 0.3s;
     }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    [data-theme="dark"] {
+      /* Couleurs Dark */
+      --bg: #1a202c;
+      --surface: #2d3748;
+      --text: #e2e8f0;
+      --primary: #667eea;
+      --accent: #f687b3;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--background);
+      background: var(--bg);
       color: var(--text);
-      line-height: 1.6;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
+      font-family: 'Segoe UI', sans-serif;
+      min-height:100vh;
+      display:flex; align-items:center; justify-content:center;
+      padding:20px;
+      transition: background var(--transition), color var(--transition);
     }
     .container {
-      width: 100%; max-width: 720px;
+      width:100%; max-width:800px;
       background: var(--surface);
       border-radius: var(--radius);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+      overflow:hidden;
+      transition: background var(--transition);
     }
     header {
+      display:flex; align-items:center; justify-content:space-between;
       background: var(--primary);
-      color: #fff;
-      padding: 32px;
-      text-align: center;
+      padding:24px;
+      color:#fff;
     }
-    header h1 { font-size: 2rem; }
-    header p { margin-top: 8px; opacity: 0.8; }
+    header h1 { font-size:1.75rem; }
+    .theme-toggle {
+      background: none; border: none; cursor:pointer;
+      width:32px; height:32px;
+      fill: #fff;
+      transition: transform var(--transition);
+    }
+    .theme-toggle:focus { outline:2px solid #fff; }
+    .theme-toggle:hover { transform: rotate(20deg); }
     main {
-      padding: 32px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
+      padding:32px; display:flex; flex-direction:column; gap:32px;
     }
     .upload-zone {
-      border: 2px dashed var(--primary-dark);
+      position:relative;
+      border:2px dashed var(--primary);
       border-radius: var(--radius);
-      padding: 48px;
-      text-align: center;
-      cursor: pointer;
+      padding:60px;
+      text-align:center;
+      cursor:pointer;
+      overflow:hidden;
       transition: background var(--transition), border-color var(--transition);
     }
-    .upload-zone:hover,
-    .upload-zone.dragover {
-      background: rgba(90, 103, 216, 0.1);
-      border-color: var(--accent);
+    .upload-zone::after {
+      content:"";
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      background:radial-gradient(circle at center, rgba(255,255,255,0.4), transparent);
+      opacity:0; transition: opacity 1.5s ease-in-out;
+      animation: pulse 3s infinite;
     }
-    .upload-zone span { display: block; font-size: 1.25rem; margin-top: 12px; }
-    .file-input { display: none; }
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: rgba(90,103,216,0.1);
+    }
+    .upload-zone:hover::after { opacity:1; }
+    @keyframes pulse {
+      0%,100% { transform: scale(0.9); }
+      50% { transform: scale(1.1); }
+    }
+    .upload-zone svg {
+      width:48px; height:48px; fill: var(--primary);
+      margin-bottom:16px;
+    }
+    .upload-zone span {
+      display:block; font-size:1.2rem; margin-bottom:12px;
+    }
+    .file-input { display:none; }
     .btn {
-      display: inline-block;
-      background: var(--primary);
-      color: #fff;
-      padding: 12px 28px;
-      border: none;
+      display:inline-block; background: var(--primary);
+      color:#fff; padding:12px 28px; border:none;
       border-radius: var(--radius);
-      font-size: 1rem;
-      cursor: pointer;
-      text-decoration: none;
+      cursor:pointer; text-decoration:none;
       transition: transform var(--transition), box-shadow var(--transition);
     }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(90,103,216,0.3); }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
     .error {
-      display: none;
-      background: #ffe3e3;
-      color: #c53030;
-      padding: 16px;
-      border-radius: var(--radius);
-      text-align: center;
+      display:none; background:#fee2e2; color:#b91c1c;
+      padding:16px; border-radius:var(--radius);
+      text-align:center; margin-top:-16px;
+      position:relative; z-index:1;
     }
+    .error[aria-live] { display:block; }
     .progress {
-      display: none;
-      width: 100%;
-      text-align: center;
+      display:none; text-align:center; margin-top:16px;
     }
-    .progress-bar {
-      width: 100%; height: 8px;
-      background: #e2e8f0;
-      border-radius: 4px;
-      overflow: hidden;
+    .loader {
+      width:48px; height:48px;
+      border:6px solid var(--surface);
+      border-top-color: var(--primary);
+      border-radius:50%;
+      animation: spin 1s linear infinite;
+      margin:0 auto 8px;
     }
-    .progress-fill {
-      width: 0%; height: 100%;
-      background: var(--primary);
-      transition: width var(--transition);
-    }
+    @keyframes spin { to { transform:rotate(360deg); } }
     .result {
-      display: none;
-      background: #f0f9ff;
-      border-radius: var(--radius);
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+      display:none; text-align:center;
+      background: rgba(230,246,255,0.6);
+      padding:24px; border-radius:var(--radius);
+      backdrop-filter: blur(6px);
     }
-    .qr-preview { width: 200px; height: 200px; margin: 0 auto 16px; }
-    .result-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .qr-preview {
+      width:220px; height:220px; margin-bottom:16px;
+      border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,0.1);
+    }
+    .result-links { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
     .features {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
-      gap: 16px;
+      display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+      gap:24px;
     }
-    .feature { text-align: center; }
-    .feature-icon { font-size: 2rem; color: var(--primary); margin-bottom: 8px; }
-    @media (max-width: 600px) {
-      header h1 { font-size: 1.75rem; }
-      main { padding: 16px; gap: 16px; }
+    .feature {
+      background: var(--surface);
+      border-radius:var(--radius);
+      padding:16px; text-align:center;
+      box-shadow:0 6px 18px rgba(0,0,0,0.05);
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .feature:hover {
+      transform: translateY(-4px);
+      box-shadow:0 8px 28px rgba(0,0,0,0.1);
+    }
+    .feature svg {
+      width:36px; height:36px; margin-bottom:8px;
+      fill: var(--primary);
+      transition: fill var(--transition);
+    }
+    .feature:hover svg { fill: var(--accent); }
+    @media (max-width:600px) {
+      header { flex-direction:column; gap:12px; }
+      main { padding:20px; gap:20px; }
     }
   </style>
 </head>
-<body>
+<body data-theme="light">
   <div class="container">
     <header>
-      <h1>🔗 QR Image Platform</h1>
-      <p>Convertissez vos images en codes QR accessibles partout dans le monde</p>
+      <h1>QR Image Platform</h1>
+      <button class="theme-toggle" aria-label="Basculer thème sombre/claire" id="themeToggle">
+        <!-- Sun/Moon icon SVG -->
+        <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm5.657 3.343a1 1 0 0 1 1.414 1.414L18.414 7.07a1 1 0 1 1-1.414-1.414l1.657-1.657zM21 11h-2a1 1 0 0 1 0-2h2a1 1 0 1 1 0 2zm-3.343 5.657a1 1 0 0 1-1.414 1.414L15.07 16.414a1 1 0 1 1 1.414-1.414l1.171 1.171zM13 21a1 1 0 0 1-2 0v-2a1 1 0 1 1 2 0v2zm-5.657-3.343a1 1 0 0 1-1.414-1.414L5.586 15.07a1 1 0 0 1 1.414 1.414l1.343 1.343zM3 13H1a1 1 0 1 1 0-2h2a1 1 0 0 1 0 2zm3.343-5.657a1 1 0 1 1 1.414-1.414L8.414 5.586a1 1 0 1 1-1.414 1.414L6.343 7.343z"/></svg>
+      </button>
     </header>
     <main>
-      <div class="upload-zone">
-        <div>📷</div>
-        <span>Cliquez ou glissez-déposez votre image (Max 10MB)</span>
+      <div class="upload-zone" id="uploadZone">
+        <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7z"/><path d="M5 18v2h14v-2H5z"/></svg>
+        <span>Cliquez ou glissez-déposez votre image (<strong>Max 10 MB</strong>)</span>
         <button class="btn">Choisir un fichier</button>
       </div>
-      <input type="file" id="imageFile" class="file-input" accept="image/*">
-      <div class="error" id="errorMsg"></div>
+      <input type="file" id="imageFile" class="file-input" accept="image/*" aria-label="Sélecteur d’image">
+      <div class="error" id="errorMsg" role="alert" aria-live="assertive"></div>
       <div class="progress" id="progress">
-        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <div class="loader" aria-hidden="true"></div>
         <p>Traitement en cours...</p>
       </div>
       <div class="result" id="result">
         <h3>✅ QR Code généré !</h3>
-        <img id="qrPreview" class="qr-preview" alt="QR Code">
+        <img id="qrPreview" class="qr-preview" alt="QR Code généré">
         <div class="result-links">
-          <a id="viewLink" class="btn" target="_blank">Voir l'image</a>
+          <a id="viewLink" class="btn" target="_blank">Voir l’image</a>
           <a id="downloadQrLink" class="btn" download>Télécharger QR</a>
         </div>
       </div>
       <div class="features">
-        <div class="feature"><div class="feature-icon">🌍</div><h4>Accessible Partout</h4></div>
-        <div class="feature"><div class="feature-icon">📱</div><h4>Compatible Mobile</h4></div>
-        <div class="feature"><div class="feature-icon">🔒</div><h4>Sécurisé</h4></div>
-        <div class="feature"><div class="feature-icon">⚡</div><h4>Rapide</h4></div>
+        <div class="feature"><svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0..."/></svg><h4>Accessible Partout</h4></div>
+        <div class="feature"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/></svg><h4>Mobile-Friendly</h4></div>
+        <div class="feature"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4z"/></svg><h4>Sécurisé</h4></div>
+        <div class="feature"><svg viewBox="0 0 24 24"><path d="M3 12h18"/></svg><h4>Ultra-Rapide</h4></div>
       </div>
     </main>
   </div>
-  <script>
-    const uploadZone = document.querySelector('.upload-zone');
-    const fileInput = document.getElementById('imageFile');
-    const errorMsg = document.getElementById('errorMsg');
-    const progress = document.getElementById('progress');
-    const result = document.getElementById('result');
 
-    ['dragover','dragleave','drop'].forEach(evt => {
-      uploadZone.addEventListener(evt, e => e.preventDefault());
+  <script>
+    // Toggle light/dark
+    const body = document.body;
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      body.dataset.theme = body.dataset.theme === 'dark' ? 'light' : 'dark';
     });
-    uploadZone.addEventListener('click', () => {fileInput.click();});
+
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput  = document.getElementById('imageFile');
+    const errorMsg   = document.getElementById('errorMsg');
+    const progress   = document.getElementById('progress');
+    const result     = document.getElementById('result');
+
+    // Click/tap ouvre le sélecteur
+    uploadZone.addEventListener('click', () => fileInput.click());
+    // Drag & drop
+    ['dragover','dragleave','drop'].forEach(e => uploadZone.addEventListener(e, ev => ev.preventDefault()));
     uploadZone.addEventListener('dragover', () => uploadZone.classList.add('dragover'));
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
     uploadZone.addEventListener('drop', e => {
@@ -370,8 +413,7 @@ def create_templates():
     function showError(msg) {
       errorMsg.textContent = msg;
       errorMsg.style.display = 'block';
-      progress.style.display = 'none';
-      result.style.display = 'none';
+      progress.style.display = result.style.display = 'none';
     }
     function hideError() {
       errorMsg.style.display = 'none';
@@ -379,22 +421,22 @@ def create_templates():
 
     function handleFile(file) {
       hideError();
-      if (!file.type.startsWith('image/')) return showError('Fichier non image');
-      if (file.size > 10*1024*1024) return showError('Trop volumineux');
+      if (!file.type.startsWith('image/')) return showError('Fichier non supporté');
+      if (file.size > 10*1024*1024) return showError('Fichier >10 MB');
       progress.style.display = 'block'; result.style.display = 'none';
       const form = new FormData(); form.append('image', file);
-      fetch('/upload', { method:'POST', body:form })
-        .then(res => res.ok ? res.json() : Promise.reject(res.status))
-        .then(data => {
-          progress.style.display='none';
-          if (data.success) {
-            document.getElementById('qrPreview').src=data.qr_url;
-            document.getElementById('viewLink').href=data.view_url;
-            document.getElementById('downloadQrLink').href=data.download_qr_url;
-            result.style.display='block';
-          } else showError(data.error);
-        })
-        .catch(() => showError('Erreur réseau'));
+      fetch('/upload',{method:'POST', body:form})
+      .then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(data => {
+        progress.style.display = 'none';
+        if (data.success) {
+          document.getElementById('qrPreview').src = data.qr_url;
+          document.getElementById('viewLink').href = data.view_url;
+          document.getElementById('downloadQrLink').href = data.download_qr_url;
+          result.style.display = 'block';
+        } else showError(data.error);
+      })
+      .catch(()=>showError('Erreur réseau'));
     }
   </script>
 </body>
@@ -408,82 +450,43 @@ def create_templates():
     view_html = '''<!DOCTYPE html>
 <!-- templates/view.html -->
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image partagée - QR Image Platform</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Image partagée</title>
   <style>
-    :root {
-      --primary: #5a67d8;
-      --background: #f7fafc;
-      --surface: #ffffff;
-      --text: #2d3748;
-      --radius: 12px;
-      --transition: 0.3s;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--background);
-      color: var(--text);
-      display: flex; justify-content: center; align-items: center;
-      height: 100vh; padding: 16px;
-    }
-    .card {
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-      overflow: hidden;
-      max-width: 600px;
-      width: 100%;
-      display: flex; flex-direction: column;
-    }
-    .card header {
-      background: var(--primary);
-      color: #fff;
-      padding: 24px;
-      text-align: center;
-    }
-    .card .content {
-      padding: 24px;
-      text-align: center;
-      display: flex; flex-direction: column; gap: 16px;
-    }
-    .card img {
-      max-width: 100%; border-radius: var(--radius);
-      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-    }
-    .info { font-size: 0.9rem; color: #4a5568; }
-    .btn {
-      padding: 10px 24px;
-      background: var(--primary);
-      color: #fff;
-      border: none;
-      border-radius: var(--radius);
-      text-decoration: none;
-      transition: transform var(--transition);
-    }
-    .btn:hover { transform: translateY(-2px); }
-    .footer {
-      background: #edf2f7;
-      text-align: center;
-      padding: 16px;
-      font-size: 0.85rem;
-    }
+    /* Même CSS de base que index.html pour thèmes et variables */
+    :root { /* … couleurs light … */ }
+    [data-theme="dark"] { /* … couleurs dark … */ }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;
+      display:flex;align-items:center;justify-content:center;height:100vh;
+      transition:background .3s,color .3s;}
+    .card{background:var(--surface);border-radius:var(--radius);
+      box-shadow:0 12px 40px rgba(0,0,0,0.1);overflow:hidden;
+      max-width:600px;width:100%;transition:background .3s;}
+    .card header{background:var(--primary);color:#fff;padding:24px;text-align:center;}
+    .card .content{padding:24px;text-align:center;display:flex;
+      flex-direction:column;gap:16px;}
+    .card img{max-width:100%;border-radius:var(--radius);
+      box-shadow:0 4px 16px rgba(0,0,0,0.05);}
+    .info{font-size:.9rem;color:var(--text);}
+    .btn{padding:10px 24px;background:var(--primary);color:#fff;
+      border:none;border-radius:var(--radius);text-decoration:none;
+      transition:transform .3s;}
+    .btn:hover{transform:translateY(-2px);}
+    .footer{background:rgba(0,0,0,0.05);text-align:center;padding:16px;font-size:.85rem;}
   </style>
 </head>
 <body>
   <div class="card">
-    <header>
-      <h2>📷 Image Partagée</h2>
-      <p>QR Image Platform</p>
-    </header>
+    <header><h2>Image Partagée</h2></header>
     <div class="content">
       <img src="{{ url_for('serve_image', image_id=image_id) }}" alt="Image partagée">
       <div class="info">
-        <p><strong>Nom:</strong> {{ image_info.original_name }}</p>
-        <p><strong>Upload le:</strong> {{ image_info.upload_time[:10] }}</p>
+        <p><strong>Nom :</strong> {{ image_info.original_name }}</p>
+        <p><strong>Upload :</strong> {{ image_info.upload_time[:10] }}</p>
       </div>
       <a href="{{ url_for('serve_image', image_id=image_id) }}" class="btn" download>⬇️ Télécharger</a>
     </div>
@@ -493,6 +496,7 @@ def create_templates():
   </div>
 </body>
 </html>
+
 '''
 
     with open('templates/view_image.html', 'w', encoding='utf-8') as f:
