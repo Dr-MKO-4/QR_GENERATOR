@@ -185,165 +185,378 @@ def create_templates():
     os.makedirs('templates', exist_ok=True)
     
     # Template principal
-    index_html = '''<!-- templates/index.html -->
-<!DOCTYPE html>
+    index_html = '''<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QR Image Platform</title>
   <style>
     :root {
-      /* Couleurs Light */
+      /* Light Colors */
       --bg: #f0f2f5;
       --surface: #fff;
       --text: #333;
-      --primary: #5a67d8;
-      --accent: #ed64a6;
+      --primary: #5a67d8; /* Indigo 600 */
+      --primary-dark: #4c52af; /* Slightly darker primary for hover/active */
+      --accent: #ed64a6; /* Pink 400 */
       --radius: 12px;
-      --transition: 0.3s;
+      --transition: 0.3s ease;
+      --shadow-light: 0 12px 40px rgba(0,0,0,0.08);
+      --shadow-hover: 0 16px 48px rgba(0,0,0,0.12);
     }
     [data-theme="dark"] {
-      /* Couleurs Dark */
-      --bg: #1a202c;
-      --surface: #2d3748;
-      --text: #e2e8f0;
-      --primary: #667eea;
-      --accent: #f687b3;
+      /* Dark Colors */
+      --bg: #1a202c; /* Gray 900 */
+      --surface: #2d3748; /* Gray 800 */
+      --text: #e2e8f0; /* Gray 200 */
+      --primary: #667eea; /* Indigo 500 */
+      --primary-dark: #556be7;
+      --accent: #f687b3; /* Pink 300 */
+      --shadow-light: 0 12px 40px rgba(0,0,0,0.2);
+      --shadow-hover: 0 16px 48px rgba(0,0,0,0.3);
     }
-    * { margin:0; padding:0; box-sizing:border-box; }
-    html { scroll-behavior: smooth; }
+
+    /* Base Reset & Typography */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html {
+      scroll-behavior: smooth;
+    }
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'Segoe UI', sans-serif;
-      min-height:100vh;
-      display:flex; align-items:center; justify-content:center;
-      padding:20px;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
       transition: background var(--transition), color var(--transition);
+      -webkit-font-smoothing: antialiased; /* Smoother fonts on macOS/iOS */
+      -moz-osx-font-smoothing: grayscale;
     }
+
+    /* Container */
     .container {
-      width:100%; max-width:800px;
+      width: 100%;
+      max-width: 800px;
       background: var(--surface);
       border-radius: var(--radius);
-      box-shadow: 0 12px 40px rgba(0,0,0,0.1);
-      overflow:hidden;
-      transition: background var(--transition);
+      box-shadow: var(--shadow-light);
+      overflow: hidden;
+      transition: background var(--transition), box-shadow var(--transition);
     }
+
+    /* Header */
     header {
-      display:flex; align-items:center; justify-content:space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       background: var(--primary);
-      padding:24px;
-      color:#fff;
+      padding: 24px;
+      color: #fff;
+      position: relative;
+      z-index: 10;
     }
-    header h1 { font-size:1.75rem; }
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    /* Theme Toggle */
     .theme-toggle {
-      background: none; border: none; cursor:pointer;
-      width:32px; height:32px;
-      fill: #fff;
-      transition: transform var(--transition);
+      background: none;
+      border: none;
+      cursor: pointer;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%; /* Make it a circle */
+      transition: transform var(--transition), background-color var(--transition);
     }
-    .theme-toggle:focus { outline:2px solid #fff; }
-    .theme-toggle:hover { transform: rotate(20deg); }
+    .theme-toggle:focus-visible { /* Modern focus outline */
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+    .theme-toggle:hover {
+      transform: scale(1.1);
+      background-color: rgba(255,255,255,0.1); /* Subtle hover background */
+    }
+    .theme-toggle svg {
+      width: 100%;
+      height: 100%;
+      fill: currentColor; /* Use current text color for SVG */
+      transition: fill var(--transition);
+    }
+    /* Specific styling for sun/moon parts */
+    [data-theme="light"] .theme-toggle .moon { display: none; }
+    [data-theme="dark"] .theme-toggle .sun { display: none; }
+
+
+    /* Main Content */
     main {
-      padding:32px; display:flex; flex-direction:column; gap:32px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
     }
+
+    /* Upload Zone */
     .upload-zone {
-      position:relative;
-      border:2px dashed var(--primary);
+      position: relative;
+      border: 2px dashed var(--primary);
       border-radius: var(--radius);
-      padding:60px;
-      text-align:center;
-      cursor:pointer;
-      overflow:hidden;
+      padding: 40px; /* Reduced padding slightly */
+      text-align: center;
+      /* cursor: pointer; REMOVED: Only button is clickable now */
+      overflow: hidden;
       transition: background var(--transition), border-color var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px; /* Spacing between elements */
     }
     .upload-zone::after {
-      content:"";
-      position:absolute; top:0; left:0; right:0; bottom:0;
-      background:radial-gradient(circle at center, rgba(255,255,255,0.4), transparent);
-      opacity:0; transition: opacity 1.5s ease-in-out;
-      animation: pulse 3s infinite;
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, rgba(90,103,216,0.1) 0%, transparent 70%); /* More subtle, primary-based radial */
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out; /* Faster fade in */
+      animation: pulse 2.5s infinite cubic-bezier(0.4, 0, 0.6, 1); /* Smoother pulse */
+      z-index: 1; /* Ensure it's above background but below content */
+      pointer-events: none; /* Allow clicks to pass through */
     }
     .upload-zone:hover {
       border-color: var(--accent);
-      background: rgba(90,103,216,0.1);
+      background: rgba(90,103,216,0.05); /* Lighter background on hover */
     }
-    .upload-zone:hover::after { opacity:1; }
+    .upload-zone:hover::after {
+      opacity: 1;
+    }
     @keyframes pulse {
-      0%,100% { transform: scale(0.9); }
-      50% { transform: scale(1.1); }
+      0%, 100% { transform: scale(0.98); opacity: 0.8; }
+      50% { transform: scale(1.02); opacity: 1; }
     }
     .upload-zone svg {
-      width:48px; height:48px; fill: var(--primary);
-      margin-bottom:16px;
+      width: 52px; /* Slightly larger icon */
+      height: 52px;
+      fill: var(--primary);
+      margin-bottom: 8px; /* Adjusted margin */
+      position: relative;
+      z-index: 2;
     }
     .upload-zone span {
-      display:block; font-size:1.2rem; margin-bottom:12px;
+      display: block;
+      font-size: 1.15rem; /* Slightly smaller text */
+      font-weight: 500;
+      margin-bottom: 8px; /* Adjusted margin */
+      position: relative;
+      z-index: 2;
     }
-    .file-input { display:none; }
+    .file-input {
+      display: none;
+    }
+
+    /* Buttons */
     .btn {
-      display:inline-block; background: var(--primary);
-      color:#fff; padding:12px 28px; border:none;
+      display: inline-flex; /* Use flex for centering content */
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 28px;
+      border: none;
       border-radius: var(--radius);
-      cursor:pointer; text-decoration:none;
-      transition: transform var(--transition), box-shadow var(--transition);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform var(--transition), box-shadow var(--transition), background-color var(--transition);
+      position: relative;
+      z-index: 2; /* Ensure button is above pulse effect */
     }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+    .btn:hover {
+      transform: translateY(-3px); /* More pronounced lift */
+      background-color: var(--primary-dark);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Stronger shadow */
+    }
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* Error Message */
     .error {
-      display:none; background:#fee2e2; color:#b91c1c;
-      padding:16px; border-radius:var(--radius);
-      text-align:center; margin-top:-16px;
-      position:relative; z-index:1;
+      display: none;
+      background: #fee2e2; /* Red 100 */
+      color: #b91c1c; /* Red 700 */
+      padding: 16px;
+      border-radius: var(--radius);
+      text-align: center;
+      margin-top: -16px; /* Overlap with previous section slightly */
+      position: relative;
+      z-index: 1;
+      font-weight: 500;
+      border: 1px solid #fca5a5; /* Red 300 */
     }
-    .error[aria-live] { display:block; }
+    .error[aria-live] {
+      display: block;
+    }
+
+    /* Progress Indicator */
     .progress {
-      display:none; text-align:center; margin-top:16px;
+      display: none;
+      text-align: center;
+      margin-top: 16px;
     }
     .loader {
-      width:48px; height:48px;
-      border:6px solid var(--surface);
+      width: 50px; /* Slightly larger loader */
+      height: 50px;
+      border: 6px solid var(--surface);
       border-top-color: var(--primary);
-      border-radius:50%;
+      border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin:0 auto 8px;
+      margin: 0 auto 12px; /* Adjusted margin */
     }
-    @keyframes spin { to { transform:rotate(360deg); } }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .progress p {
+      font-size: 1.1rem;
+      font-weight: 500;
+    }
+
+    /* Result Section */
     .result {
-      display:none; text-align:center;
-      background: rgba(230,246,255,0.6);
-      padding:24px; border-radius:var(--radius);
-      backdrop-filter: blur(6px);
+      display: none;
+      text-align: center;
+      background: rgba(230,246,255,0.6); /* Light blue with transparency */
+      backdrop-filter: blur(8px); /* Stronger blur */
+      padding: 32px; /* Increased padding */
+      border-radius: var(--radius);
+      border: 1px solid rgba(90,103,216,0.1); /* Subtle border */
+      box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+      margin-top: -16px; /* Overlap with previous section */
+      position: relative;
+      z-index: 1;
+    }
+    .result h3 {
+      font-size: 1.6rem;
+      color: var(--primary);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
     }
     .qr-preview {
-      width:220px; height:220px; margin-bottom:16px;
-      border-radius:var(--radius); box-shadow:0 4px 16px rgba(0,0,0,0.1);
+      width: 240px; /* Slightly larger preview */
+      height: 240px;
+      margin: 0 auto 24px;
+      border-radius: var(--radius);
+      box-shadow: 0 6px 20px rgba(0,0,0,0.15); /* More prominent shadow */
+      object-fit: contain; /* Ensure image scales correctly */
+      background-color: #fff; /* White background for QR code */
+      padding: 5px; /* Small padding if QR code is tight to edge */
     }
-    .result-links { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+    .result-links {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .result-links .btn {
+      min-width: 160px; /* Ensure buttons have minimum width */
+    }
+
+    /* Features Section */
     .features {
-      display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-      gap:24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); /* Adjusted min-width for better mobile fit */
+      gap: 24px;
     }
     .feature {
       background: var(--surface);
-      border-radius:var(--radius);
-      padding:16px; text-align:center;
-      box-shadow:0 6px 18px rgba(0,0,0,0.05);
+      border-radius: var(--radius);
+      padding: 20px; /* Slightly more padding */
+      text-align: center;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.05);
       transition: transform var(--transition), box-shadow var(--transition);
+      border: 1px solid rgba(0,0,0,0.05); /* Subtle border */
     }
     .feature:hover {
-      transform: translateY(-4px);
-      box-shadow:0 8px 28px rgba(0,0,0,0.1);
+      transform: translateY(-5px); /* More lift */
+      box-shadow: var(--shadow-hover);
     }
     .feature svg {
-      width:36px; height:36px; margin-bottom:8px;
+      width: 40px; /* Larger icons */
+      height: 40px;
+      margin-bottom: 12px;
       fill: var(--primary);
       transition: fill var(--transition);
     }
-    .feature:hover svg { fill: var(--accent); }
-    @media (max-width:600px) {
-      header { flex-direction:column; gap:12px; }
-      main { padding:20px; gap:20px; }
+    .feature:hover svg {
+      fill: var(--accent);
+    }
+    .feature h4 {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      header {
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px;
+      }
+      header h1 {
+        font-size: 1.5rem;
+      }
+      main {
+        padding: 20px;
+        gap: 24px;
+      }
+      .upload-zone {
+        padding: 30px;
+      }
+      .upload-zone span {
+        font-size: 1rem;
+      }
+      .result h3 {
+        font-size: 1.4rem;
+      }
+      .qr-preview {
+        width: 200px;
+        height: 200px;
+      }
+      .result-links .btn {
+        flex: 1 1 100%; /* Stack buttons on small screens */
+      }
+      .features {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Even smaller cards for tiny screens */
+      }
+      .feature {
+        padding: 15px;
+      }
     }
   </style>
 </head>
@@ -351,16 +564,28 @@ def create_templates():
   <div class="container">
     <header>
       <h1>QR Image Platform</h1>
-      <button class="theme-toggle" aria-label="Basculer thème sombre/claire" id="themeToggle">
-        <!-- Sun/Moon icon SVG -->
-        <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm5.657 3.343a1 1 0 0 1 1.414 1.414L18.414 7.07a1 1 0 1 1-1.414-1.414l1.657-1.657zM21 11h-2a1 1 0 0 1 0-2h2a1 1 0 1 1 0 2zm-3.343 5.657a1 1 0 0 1-1.414 1.414L15.07 16.414a1 1 0 1 1 1.414-1.414l1.171 1.171zM13 21a1 1 0 0 1-2 0v-2a1 1 0 1 1 2 0v2zm-5.657-3.343a1 1 0 0 1-1.414-1.414L5.586 15.07a1 1 0 0 1 1.414 1.414l1.343 1.343zM3 13H1a1 1 0 1 1 0-2h2a1 1 0 0 1 0 2zm3.343-5.657a1 1 0 1 1 1.414-1.414L8.414 5.586a1 1 0 1 1-1.414 1.414L6.343 7.343z"/></svg>
+      <button class="theme-toggle" aria-label="Basculer thème sombre/clair" id="themeToggle">
+        <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
       </button>
     </header>
     <main>
       <div class="upload-zone" id="uploadZone">
         <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7z"/><path d="M5 18v2h14v-2H5z"/></svg>
         <span>Cliquez ou glissez-déposez votre image (<strong>Max 10 MB</strong>)</span>
-        <button class="btn">Choisir un fichier</button>
+        <button class="btn" id="selectFileBtn">Choisir un fichier</button>
       </div>
       <input type="file" id="imageFile" class="file-input" accept="image/*" aria-label="Sélecteur d’image">
       <div class="error" id="errorMsg" role="alert" aria-live="assertive"></div>
@@ -377,66 +602,148 @@ def create_templates():
         </div>
       </div>
       <div class="features">
-        <div class="feature"><svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0..."/></svg><h4>Accessible Partout</h4></div>
-        <div class="feature"><svg viewBox="0 0 24 24"><path d="M4 7h16v10H4z"/></svg><h4>Mobile-Friendly</h4></div>
-        <div class="feature"><svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4z"/></svg><h4>Sécurisé</h4></div>
-        <div class="feature"><svg viewBox="0 0 24 24"><path d="M3 12h18"/></svg><h4>Ultra-Rapide</h4></div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M12 2a1 1 0 0 1 1 1v2a1 1 0 0 1-2 0V3a1 1 0 0 1 1-1zm5.657 3.343a1 1 0 0 1 1.414 1.414L18.414 7.07a1 1 0 1 1-1.414-1.414l1.657-1.657zM21 11h-2a1 1 0 0 1 0-2h2a1 1 0 1 1 0 2zm-3.343 5.657a1 1 0 0 1-1.414 1.414L15.07 16.414a1 1 0 1 1 1.414-1.414l1.171 1.171zM13 21a1 1 0 0 1-2 0v-2a1 1 0 1 1 2 0v2zm-5.657-3.343a1 1 0 0 1-1.414-1.414L5.586 15.07a1 1 0 0 1 1.414 1.414l1.343 1.343zM3 13H1a1 1 0 1 1 0-2h2a1 1 0 0 1 0 2zm3.343-5.657a1 1 0 1 1 1.414-1.414L8.414 5.586a1 1 0 1 1-1.414 1.414L6.343 7.343z"/></svg>
+          <h4>Accessible Partout</h4>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M17 1H7C5.9 1 5 1.9 5 3v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-2-2-2zm-2 20H9v-1h6v1zm3-3V6c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2z"/></svg>
+          <h4>Mobile-Friendly</h4>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.5 3.8 10.7 9 12 5.2-1.3 9-6.5 9-12V5l-9-4zM12 21.6c-4.3-1.2-7.5-5.3-7.5-10.6V6.1l7.5-3.3 7.5 3.3v4.9c0 5.3-3.2 9.4-7.5 10.6zM11 15h2v2h-2zm0-8h2v6h-2z"/></svg>
+          <h4>Sécurisé</h4>
+        </div>
+        <div class="feature">
+          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.51 0-2.91-.49-4.08-1.31L7.1 18.34c1.42.98 3.16 1.66 5.05 1.66 4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+          <h4>Ultra-Rapide</h4>
+        </div>
       </div>
     </main>
   </div>
 
   <script>
-    // Toggle light/dark
+    // Theme toggle
     const body = document.body;
-    document.getElementById('themeToggle').addEventListener('click', () => {
+    const themeToggle = document.getElementById('themeToggle');
+
+    themeToggle.addEventListener('click', () => {
       body.dataset.theme = body.dataset.theme === 'dark' ? 'light' : 'dark';
+      // Store user's preference
+      localStorage.setItem('theme', body.dataset.theme);
+    });
+
+    // Apply saved theme on load
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      body.dataset.theme = savedTheme;
     });
 
     const uploadZone = document.getElementById('uploadZone');
     const fileInput  = document.getElementById('imageFile');
+    const selectFileBtn = document.getElementById('selectFileBtn'); // The new button
     const errorMsg   = document.getElementById('errorMsg');
     const progress   = document.getElementById('progress');
     const result     = document.getElementById('result');
 
-    // Click/tap ouvre le sélecteur
-    uploadZone.addEventListener('click', () => fileInput.click());
-    // Drag & drop
-    ['dragover','dragleave','drop'].forEach(e => uploadZone.addEventListener(e, ev => ev.preventDefault()));
-    uploadZone.addEventListener('dragover', () => uploadZone.classList.add('dragover'));
-    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    // Click/tap on the button opens the file selector
+    selectFileBtn.addEventListener('click', (e) => {
+      e.stopPropagation(); // Prevent uploadZone's click listener from firing
+      fileInput.click();
+    });
+
+    // Drag & drop functionality for the upload zone
+    ['dragover','dragleave','drop'].forEach(e => {
+      uploadZone.addEventListener(e, ev => {
+        ev.preventDefault(); // Prevent default browser behavior (e.g., opening file)
+        ev.stopPropagation(); // Stop propagation from affecting parent elements
+      });
+    });
+
+    uploadZone.addEventListener('dragover', () => {
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
     uploadZone.addEventListener('drop', e => {
       uploadZone.classList.remove('dragover');
-      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+      if (e.dataTransfer.files.length) {
+        handleFile(e.dataTransfer.files[0]);
+      }
     });
-    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
+
+    // Handle file selection via input change
+    fileInput.addEventListener('change', e => {
+      if (e.target.files.length) {
+        handleFile(e.target.files[0]);
+      }
+    });
 
     function showError(msg) {
       errorMsg.textContent = msg;
       errorMsg.style.display = 'block';
+      errorMsg.setAttribute('aria-live', 'assertive'); // Make screen readers announce it
       progress.style.display = result.style.display = 'none';
-    }
-    function hideError() {
-      errorMsg.style.display = 'none';
+      result.setAttribute('aria-hidden', 'true');
+      progress.setAttribute('aria-hidden', 'true');
     }
 
-    function handleFile(file) {
+    function hideError() {
+      errorMsg.style.display = 'none';
+      errorMsg.removeAttribute('aria-live');
+    }
+
+    async function handleFile(file) {
       hideError();
-      if (!file.type.startsWith('image/')) return showError('Fichier non supporté');
-      if (file.size > 10*1024*1024) return showError('Fichier >10 MB');
-      progress.style.display = 'block'; result.style.display = 'none';
-      const form = new FormData(); form.append('image', file);
-      fetch('/upload',{method:'POST', body:form})
-      .then(r => r.ok ? r.json() : Promise.reject(r.status))
-      .then(data => {
+      if (!file.type.startsWith('image/')) {
+        return showError('Fichier non supporté. Veuillez sélectionner une image.');
+      }
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        return showError('Le fichier est trop volumineux. La taille maximale est de 10 MB.');
+      }
+
+      progress.style.display = 'block';
+      progress.setAttribute('aria-hidden', 'false');
+      result.style.display = 'none';
+      result.setAttribute('aria-hidden', 'true');
+
+
+      const form = new FormData();
+      form.append('image', file);
+
+      try {
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: form,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `Erreur serveur: ${response.status}`);
+        }
+
+        const data = await response.json();
+
         progress.style.display = 'none';
+        progress.setAttribute('aria-hidden', 'true');
+
         if (data.success) {
           document.getElementById('qrPreview').src = data.qr_url;
+          document.getElementById('qrPreview').alt = `QR Code pour ${file.name}`;
           document.getElementById('viewLink').href = data.view_url;
           document.getElementById('downloadQrLink').href = data.download_qr_url;
           result.style.display = 'block';
-        } else showError(data.error);
-      })
-      .catch(()=>showError('Erreur réseau'));
+          result.setAttribute('aria-hidden', 'false');
+        } else {
+          showError(data.error || 'Une erreur inconnue est survenue.');
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        showError(`Erreur lors du téléchargement : ${error.message || 'Problème réseau ou serveur indisponible.'}`);
+      }
     }
   </script>
 </body>
@@ -448,47 +755,194 @@ def create_templates():
 
     # Template de visualisation
     view_html = '''<!DOCTYPE html>
-<!-- templates/view.html -->
-<!DOCTYPE html>
 <html lang="fr" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Image partagée</title>
   <style>
-    /* Même CSS de base que index.html pour thèmes et variables */
-    :root { /* … couleurs light … */ }
-    [data-theme="dark"] { /* … couleurs dark … */ }
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{background:var(--bg);color:var(--text);font-family:'Segoe UI',sans-serif;
-      display:flex;align-items:center;justify-content:center;height:100vh;
-      transition:background .3s,color .3s;}
-    .card{background:var(--surface);border-radius:var(--radius);
-      box-shadow:0 12px 40px rgba(0,0,0,0.1);overflow:hidden;
-      max-width:600px;width:100%;transition:background .3s;}
-    .card header{background:var(--primary);color:#fff;padding:24px;text-align:center;}
-    .card .content{padding:24px;text-align:center;display:flex;
-      flex-direction:column;gap:16px;}
-    .card img{max-width:100%;border-radius:var(--radius);
-      box-shadow:0 4px 16px rgba(0,0,0,0.05);}
-    .info{font-size:.9rem;color:var(--text);}
-    .btn{padding:10px 24px;background:var(--primary);color:#fff;
-      border:none;border-radius:var(--radius);text-decoration:none;
-      transition:transform .3s;}
-    .btn:hover{transform:translateY(-2px);}
-    .footer{background:rgba(0,0,0,0.05);text-align:center;padding:16px;font-size:.85rem;}
+    /* Base CSS from index.html for consistent themes */
+    :root {
+      --bg: #f0f2f5;
+      --surface: #fff;
+      --text: #333;
+      --primary: #5a67d8;
+      --primary-dark: #4c52af;
+      --accent: #ed64a6;
+      --radius: 12px;
+      --transition: 0.3s ease;
+      --shadow-light: 0 12px 40px rgba(0,0,0,0.08);
+      --shadow-hover: 0 16px 48px rgba(0,0,0,0.12);
+    }
+    [data-theme="dark"] {
+      --bg: #1a202c;
+      --surface: #2d3748;
+      --text: #e2e8f0;
+      --primary: #667eea;
+      --primary-dark: #556be7;
+      --accent: #f687b3;
+      --shadow-light: 0 12px 40px rgba(0,0,0,0.2);
+      --shadow-hover: 0 16px 48px rgba(0,0,0,0.3);
+    }
+
+    /* General Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh; /* Use min-height for full viewport height */
+      padding: 20px; /* Add padding for smaller screens */
+      transition: background var(--transition), color var(--transition);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Card Styling */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-light);
+      overflow: hidden;
+      max-width: 600px;
+      width: 100%;
+      transition: background var(--transition), box-shadow var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center; /* Center content horizontally */
+    }
+    .card header {
+      background: var(--primary);
+      color: #fff;
+      padding: 24px;
+      text-align: center;
+      width: 100%; /* Ensure header spans full width */
+    }
+    .card header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+    .card .content {
+      padding: 32px; /* Increased padding */
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 24px; /* More space between elements */
+      width: 100%;
+    }
+    .card img {
+      max-width: 100%;
+      height: auto; /* Maintain aspect ratio */
+      border-radius: var(--radius);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1); /* Stronger shadow */
+      margin: 0 auto; /* Center image */
+      display: block; /* Remove extra space below image */
+    }
+    .info {
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .info p strong {
+      color: var(--primary);
+    }
+
+    /* Button Styling (reused from index.html for consistency) */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 28px;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      text-decoration: none;
+      font-weight: 600;
+      transition: transform var(--transition), box-shadow var(--transition), background-color var(--transition);
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      background-color: var(--primary-dark);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* Footer */
+    .footer {
+      background: rgba(0,0,0,0.03); /* Lighter background */
+      text-align: center;
+      padding: 18px; /* More padding */
+      font-size: .9rem;
+      color: var(--text);
+      width: 100%;
+      border-top: 1px solid rgba(0,0,0,0.05); /* Subtle border */
+    }
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: color var(--transition);
+    }
+    .footer a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 600px) {
+      body {
+        padding: 15px;
+      }
+      .card header {
+        padding: 20px;
+      }
+      .card header h2 {
+        font-size: 1.5rem;
+      }
+      .card .content {
+        padding: 20px;
+        gap: 18px;
+      }
+      .info {
+        font-size: 0.9rem;
+      }
+      .btn {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+      }
+      .footer {
+        padding: 14px;
+        font-size: 0.8rem;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="card">
     <header><h2>Image Partagée</h2></header>
     <div class="content">
-      <img src="{{ url_for('serve_image', image_id=image_id) }}" alt="Image partagée">
+      <img src="{{ url_for('serve_image', image_id=image_id) }}" alt="Image partagée: {{ image_info.original_name }}">
       <div class="info">
         <p><strong>Nom :</strong> {{ image_info.original_name }}</p>
         <p><strong>Upload :</strong> {{ image_info.upload_time[:10] }}</p>
       </div>
-      <a href="{{ url_for('serve_image', image_id=image_id) }}" class="btn" download>⬇️ Télécharger</a>
+      <a href="{{ url_for('serve_image', image_id=image_id) }}" class="btn" download="{{ image_info.original_name }}">⬇️ Télécharger</a>
     </div>
     <div class="footer">
       Créé avec <a href="{{ url_for('index') }}">QR Image Platform</a>
