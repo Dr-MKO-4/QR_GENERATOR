@@ -321,7 +321,7 @@ def create_templates():
       <p>Convertissez vos images en codes QR accessibles partout dans le monde</p>
     </header>
     <main>
-      <div class="upload-zone" onclick="fileInput.click()">
+      <div class="upload-zone">
         <div>📷</div>
         <span>Cliquez ou glissez-déposez votre image (Max 10MB)</span>
         <button class="btn">Choisir un fichier</button>
@@ -358,6 +358,7 @@ def create_templates():
     ['dragover','dragleave','drop'].forEach(evt => {
       uploadZone.addEventListener(evt, e => e.preventDefault());
     });
+    uploadZone.addEventListener('click', () => {fileInput.click();});
     uploadZone.addEventListener('dragover', () => uploadZone.classList.add('dragover'));
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
     uploadZone.addEventListener('drop', e => {
