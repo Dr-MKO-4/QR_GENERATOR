@@ -46,6 +46,7 @@ def load_image_data():
             with open(DATA_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
     except:
+        print(f"Erreur chargement des données: {DATA_FILE} non trouvé ou corrompu.")
         pass
     return {}
 
