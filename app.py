@@ -641,31 +641,29 @@ def create_templates():
 
     const uploadZone = document.getElementById('uploadZone');
     const fileInput  = document.getElementById('imageFile');
-    const selectFileBtn = document.getElementById('selectFileBtn'); // The new button
+    const selectFileBtn = document.getElementById('selectFileBtn'); // Le nouveau bouton que vous avez ajouté
     const errorMsg   = document.getElementById('errorMsg');
     const progress   = document.getElementById('progress');
     const result     = document.getElementById('result');
 
-    // Click/tap on the button opens the file selector
+    // C'EST ICI QUE SE TROUVE LA MODIFICATION CLÉ POUR LE MOBILE
+    // Le clic sur le bouton 'Choisir un fichier' déclenche l'input de fichier.
     selectFileBtn.addEventListener('click', (e) => {
-      e.stopPropagation(); // Prevent uploadZone's click listener from firing
-      fileInput.click();
+      e.preventDefault(); // Empêche le comportement par défaut du bouton (ex: soumission de formulaire)
+      fileInput.click();  // Déclenche le clic programmatique sur l'input de fichier caché
     });
 
-    // Drag & drop functionality for the upload zone
+    // Fonctionnalité de glisser-déposer pour la zone d'upload
     ['dragover','dragleave','drop'].forEach(e => {
       uploadZone.addEventListener(e, ev => {
-        ev.preventDefault(); // Prevent default browser behavior (e.g., opening file)
-        ev.stopPropagation(); // Stop propagation from affecting parent elements
+        ev.preventDefault(); // Empêche le comportement par défaut du navigateur (ex: ouvrir le fichier)
+        ev.stopPropagation(); // Arrête la propagation pour ne pas affecter les éléments parents
+        if (e === 'dragover') {
+          uploadZone.classList.add('dragover');
+        } else if (e === 'dragleave') {
+          uploadZone.classList.remove('dragover');
+        }
       });
-    });
-
-    uploadZone.addEventListener('dragover', () => {
-      uploadZone.classList.add('dragover');
-    });
-
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('dragover');
     });
 
     uploadZone.addEventListener('drop', e => {
@@ -675,12 +673,23 @@ def create_templates():
       }
     });
 
-    // Handle file selection via input change
+    // Gère la sélection de fichier via le changement d'input (c'est là que le fichier est réellement traité)
     fileInput.addEventListener('change', e => {
-      if (e.target.files.length) {
+      // AJOUTEZ CETTE VÉRIFICATION pour vous assurer qu'un fichier a bien été sélectionné
+      if (e.target.files.length > 0) {
         handleFile(e.target.files[0]);
       }
     });
+
+    // ... (vos fonctions showError, hideError, handleFile restent les mêmes,
+    // MAIS assurez-vous que `handleFile` a bien le `if (!file)` au début comme suggéré précédemment) ...
+
+    // Début de la fonction handleFile (juste pour référence, le corps reste le même)
+    async function handleFile(file) {
+      hideError();
+      if (!file) { // Vérification supplémentaire au cas où le fichier est nul
+          return showError('Aucun fichier sélectionné ou une erreur s\'est produite.');
+      }
 
     function showError(msg) {
       errorMsg.textContent = msg;
