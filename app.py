@@ -186,464 +186,313 @@ def create_templates():
     
     # Template principal
     index_html = '''<!DOCTYPE html>
+<!-- templates/index.html -->
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Image Platform - Convertisseur d'Images en QR Code</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 30px;
-            text-align: center;
-        }
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
-        .header p {
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        .content {
-            padding: 40px 30px;
-        }
-        .upload-zone {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 60px 20px;
-            text-align: center;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            margin-bottom: 30px;
-            min-height: 200px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-        .upload-zone:hover {
-            border-color: #764ba2;
-            background: #f8f9ff;
-        }
-        .upload-zone.dragover {
-            border-color: #764ba2;
-            background: #f0f4ff;
-            transform: scale(1.02);
-        }
-        .upload-icon {
-            font-size: 4rem;
-            color: #667eea;
-            margin-bottom: 20px;
-        }
-        .upload-text {
-            font-size: 1.2rem;
-            color: #555;
-            margin-bottom: 20px;
-        }
-        .file-input {
-            display: none;
-        }
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-block;
-            text-decoration: none;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .progress {
-            display: none;
-            margin: 20px 0;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 0%;
-            transition: width 0.3s ease;
-            animation: loading 2s infinite;
-        }
-        @keyframes loading {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-        .result {
-            display: none;
-            text-align: center;
-            padding: 30px;
-            background: #f8f9ff;
-            border-radius: 15px;
-            margin-top: 30px;
-        }
-        .qr-preview {
-            max-width: 300px;
-            margin: 0 auto 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .result-links {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-        .feature {
-            text-align: center;
-            padding: 20px;
-        }
-        .feature-icon {
-            font-size: 2.5rem;
-            color: #667eea;
-            margin-bottom: 15px;
-        }
-        .error {
-            color: #e74c3c;
-            background: #ffeaea;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            display: none;
-        }
-        @media (max-width: 768px) {
-            .header h1 { font-size: 2rem; }
-            .content { padding: 20px; }
-            .result-links { flex-direction: column; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Image Platform - Convertisseur d'Images en QR Code</title>
+  <style>
+    :root {
+      --primary: #5a67d8;
+      --primary-dark: #4c51bf;
+      --background: #f7fafc;
+      --surface: #ffffff;
+      --text: #2d3748;
+      --accent: #ed64a6;
+      --radius: 12px;
+      --transition: 0.3s;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .container {
+      width: 100%; max-width: 720px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: var(--primary);
+      color: #fff;
+      padding: 32px;
+      text-align: center;
+    }
+    header h1 { font-size: 2rem; }
+    header p { margin-top: 8px; opacity: 0.8; }
+    main {
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .upload-zone {
+      border: 2px dashed var(--primary-dark);
+      border-radius: var(--radius);
+      padding: 48px;
+      text-align: center;
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition);
+    }
+    .upload-zone:hover,
+    .upload-zone.dragover {
+      background: rgba(90, 103, 216, 0.1);
+      border-color: var(--accent);
+    }
+    .upload-zone span { display: block; font-size: 1.25rem; margin-top: 12px; }
+    .file-input { display: none; }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 28px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform var(--transition), box-shadow var(--transition);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(90,103,216,0.3); }
+    .error {
+      display: none;
+      background: #ffe3e3;
+      color: #c53030;
+      padding: 16px;
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .progress {
+      display: none;
+      width: 100%;
+      text-align: center;
+    }
+    .progress-bar {
+      width: 100%; height: 8px;
+      background: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      width: 0%; height: 100%;
+      background: var(--primary);
+      transition: width var(--transition);
+    }
+    .result {
+      display: none;
+      background: #f0f9ff;
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    }
+    .qr-preview { width: 200px; height: 200px; margin: 0 auto 16px; }
+    .result-links { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      gap: 16px;
+    }
+    .feature { text-align: center; }
+    .feature-icon { font-size: 2rem; color: var(--primary); margin-bottom: 8px; }
+    @media (max-width: 600px) {
+      header h1 { font-size: 1.75rem; }
+      main { padding: 16px; gap: 16px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🔗 QR Image Platform</h1>
-            <p>Convertissez vos images en codes QR accessibles partout dans le monde</p>
+  <div class="container">
+    <header>
+      <h1>🔗 QR Image Platform</h1>
+      <p>Convertissez vos images en codes QR accessibles partout dans le monde</p>
+    </header>
+    <main>
+      <div class="upload-zone" onclick="fileInput.click()">
+        <div>📷</div>
+        <span>Cliquez ou glissez-déposez votre image (Max 10MB)</span>
+        <button class="btn">Choisir un fichier</button>
+      </div>
+      <input type="file" id="imageFile" class="file-input" accept="image/*">
+      <div class="error" id="errorMsg"></div>
+      <div class="progress" id="progress">
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+        <p>Traitement en cours...</p>
+      </div>
+      <div class="result" id="result">
+        <h3>✅ QR Code généré !</h3>
+        <img id="qrPreview" class="qr-preview" alt="QR Code">
+        <div class="result-links">
+          <a id="viewLink" class="btn" target="_blank">Voir l'image</a>
+          <a id="downloadQrLink" class="btn" download>Télécharger QR</a>
         </div>
-        
-        <div class="content">
-            <div class="upload-zone" onclick="document.getElementById('imageFile').click()">
-                <div class="upload-icon">📷</div>
-                <div class="upload-text">
-                    Cliquez ici ou glissez votre image<br>
-                    <small>Formats supportés: JPG, PNG, GIF, BMP, WebP (Max 10MB)<br>
-                    📱 Fonctionne sur mobile et ordinateur</small>
-                </div>
-                <button class="btn">Choisir une image</button>
-            </div>
-            
-            <input type="file" id="imageFile" class="file-input" accept="image/*">
-            
-            <div class="error" id="errorMsg"></div>
-            
-            <div class="progress" id="progress">
-                <div class="progress-bar">
-                    <div class="progress-fill"></div>
-                </div>
-                <p>Traitement de votre image...</p>
-            </div>
-            
-            <div class="result" id="result">
-                <h3>✅ QR Code généré avec succès !</h3>
-                <img id="qrPreview" class="qr-preview" alt="QR Code">
-                <p>Scannez ce QR code avec n'importe quel smartphone pour voir votre image</p>
-                <div class="result-links">
-                    <a id="viewLink" class="btn" target="_blank">👀 Voir l'image</a>
-                    <a id="downloadQrLink" class="btn" download>⬇️ Télécharger QR</a>
-                </div>
-            </div>
-            
-            <div class="features">
-                <div class="feature">
-                    <div class="feature-icon">🌍</div>
-                    <h3>Accessible Partout</h3>
-                    <p>Vos QR codes fonctionnent dans le monde entier, aucune limitation géographique</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">📱</div>
-                    <h3>Compatible Mobile</h3>
-                    <p>Fonctionne avec tous les smartphones et applications de scan QR</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Sécurisé</h3>
-                    <p>Images automatiquement supprimées après 7 jours pour votre sécurité</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Rapide</h3>
-                    <p>Optimisation automatique pour des QR codes de qualité optimale</p>
-                </div>
-            </div>
-        </div>
-    </div>
+      </div>
+      <div class="features">
+        <div class="feature"><div class="feature-icon">🌍</div><h4>Accessible Partout</h4></div>
+        <div class="feature"><div class="feature-icon">📱</div><h4>Compatible Mobile</h4></div>
+        <div class="feature"><div class="feature-icon">🔒</div><h4>Sécurisé</h4></div>
+        <div class="feature"><div class="feature-icon">⚡</div><h4>Rapide</h4></div>
+      </div>
+    </main>
+  </div>
+  <script>
+    const uploadZone = document.querySelector('.upload-zone');
+    const fileInput = document.getElementById('imageFile');
+    const errorMsg = document.getElementById('errorMsg');
+    const progress = document.getElementById('progress');
+    const result = document.getElementById('result');
 
-    <script>
-        const uploadZone = document.querySelector('.upload-zone');
-        const fileInput = document.getElementById('imageFile');
-        const errorMsg = document.getElementById('errorMsg');
-        const progress = document.getElementById('progress');
-        const result = document.getElementById('result');
+    ['dragover','dragleave','drop'].forEach(evt => {
+      uploadZone.addEventListener(evt, e => e.preventDefault());
+    });
+    uploadZone.addEventListener('dragover', () => uploadZone.classList.add('dragover'));
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      uploadZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
-        // Drag & Drop
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('dragover');
-        });
+    function showError(msg) {
+      errorMsg.textContent = msg;
+      errorMsg.style.display = 'block';
+      progress.style.display = 'none';
+      result.style.display = 'none';
+    }
+    function hideError() {
+      errorMsg.style.display = 'none';
+    }
 
-        uploadZone.addEventListener('dragleave', () => {
-            uploadZone.classList.remove('dragover');
-        });
-
-        uploadZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
-        });
-
-        function showError(message) {
-            errorMsg.textContent = message;
-            errorMsg.style.display = 'block';
-            progress.style.display = 'none';
-            result.style.display = 'none';
-        }
-
-        function hideError() {
-            errorMsg.style.display = 'none';
-        }
-
-        function handleFile(file) {
-            hideError();
-            
-            console.log('Traitement du fichier:', file.name, 'Taille:', file.size, 'Type:', file.type);
-            
-            // Vérifications
-            if (!file.type.startsWith('image/')) {
-                showError('Veuillez sélectionner un fichier image valide.');
-                return;
-            }
-            
-            if (file.size > 10 * 1024 * 1024) {
-                showError('Le fichier est trop volumineux (max 10MB).');
-                return;
-            }
-
-            // Afficher le progrès
-            progress.style.display = 'block';
-            result.style.display = 'none';
-
-            // Préparer les données
-            const formData = new FormData();
-            formData.append('image', file);
-
-            console.log('Envoi de la requête...');
-
-            // Envoyer la requête
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                console.log('Réponse reçue:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Données reçues:', data);
-                progress.style.display = 'none';
-                
-                if (data.success) {
-                    // Afficher le résultat
-                    document.getElementById('qrPreview').src = data.qr_url;
-                    document.getElementById('viewLink').href = data.view_url;
-                    document.getElementById('downloadQrLink').href = data.download_qr_url;
-                    result.style.display = 'block';
-                    
-                    console.log('Upload réussi!');
-                } else {
-                    console.error('Erreur serveur:', data.error);
-                    showError(data.error || 'Erreur lors du traitement de l\'image.');
-                }
-            })
-            .catch(error => {
-                console.error('Erreur:', error);
-                progress.style.display = 'none';
-                showError('Erreur de connexion. Vérifiez votre connexion et réessayez.');
-            });
-        }
-    </script>
+    function handleFile(file) {
+      hideError();
+      if (!file.type.startsWith('image/')) return showError('Fichier non image');
+      if (file.size > 10*1024*1024) return showError('Trop volumineux');
+      progress.style.display = 'block'; result.style.display = 'none';
+      const form = new FormData(); form.append('image', file);
+      fetch('/upload', { method:'POST', body:form })
+        .then(res => res.ok ? res.json() : Promise.reject(res.status))
+        .then(data => {
+          progress.style.display='none';
+          if (data.success) {
+            document.getElementById('qrPreview').src=data.qr_url;
+            document.getElementById('viewLink').href=data.view_url;
+            document.getElementById('downloadQrLink').href=data.download_qr_url;
+            result.style.display='block';
+          } else showError(data.error);
+        })
+        .catch(() => showError('Erreur réseau'));
+    }
+  </script>
 </body>
-</html>'''
+</html>
+'''
 
     with open('templates/index.html', 'w', encoding='utf-8') as f:
         f.write(index_html)
 
     # Template de visualisation
     view_html = '''<!DOCTYPE html>
+<!-- templates/view.html -->
+<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image partagée - QR Image Platform</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-        .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-            max-width: 90%;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .content {
-            padding: 30px;
-            text-align: center;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .image-container {
-            margin: 20px 0;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        img {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
-        }
-        .info {
-            margin-top: 20px;
-            color: #666;
-        }
-        .btn {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 12px 25px;
-            text-decoration: none;
-            border-radius: 25px;
-            margin: 10px;
-            transition: all 0.3s ease;
-        }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-        .footer {
-            padding: 20px;
-            text-align: center;
-            background: #f8f9ff;
-            border-top: 1px solid #eee;
-        }
-        .footer a {
-            color: #667eea;
-            text-decoration: none;
-        }
-        @media (max-width: 768px) {
-            .container { max-width: 95%; }
-            .content { padding: 20px; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image partagée - QR Image Platform</title>
+  <style>
+    :root {
+      --primary: #5a67d8;
+      --background: #f7fafc;
+      --surface: #ffffff;
+      --text: #2d3748;
+      --radius: 12px;
+      --transition: 0.3s;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh; padding: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+      overflow: hidden;
+      max-width: 600px;
+      width: 100%;
+      display: flex; flex-direction: column;
+    }
+    .card header {
+      background: var(--primary);
+      color: #fff;
+      padding: 24px;
+      text-align: center;
+    }
+    .card .content {
+      padding: 24px;
+      text-align: center;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .card img {
+      max-width: 100%; border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+    }
+    .info { font-size: 0.9rem; color: #4a5568; }
+    .btn {
+      padding: 10px 24px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: transform var(--transition);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .footer {
+      background: #edf2f7;
+      text-align: center;
+      padding: 16px;
+      font-size: 0.85rem;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>📷 Image Partagée</h2>
-            <p>Via QR Image Platform</p>
-        </div>
-        
-        <div class="content">
-            <div class="image-container">
-                <img src="{{ url_for('serve_image', image_id=image_id) }}" 
-                     alt="Image partagée via QR Code"
-                     loading="lazy">
-            </div>
-            
-            <div class="info">
-                <p><strong>Image:</strong> {{ image_info.original_name }}</p>
-                <p><strong>Partagée le:</strong> {{ image_info.upload_time[:10] }}</p>
-            </div>
-            
-            <div>
-                <a href="{{ url_for('serve_image', image_id=image_id) }}" 
-                   class="btn" download>⬇️ Télécharger</a>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p>Créé avec <a href="{{ url_for('index') }}">QR Image Platform</a> 🔗</p>
-        </div>
+  <div class="card">
+    <header>
+      <h2>📷 Image Partagée</h2>
+      <p>QR Image Platform</p>
+    </header>
+    <div class="content">
+      <img src="{{ url_for('serve_image', image_id=image_id) }}" alt="Image partagée">
+      <div class="info">
+        <p><strong>Nom:</strong> {{ image_info.original_name }}</p>
+        <p><strong>Upload le:</strong> {{ image_info.upload_time[:10] }}</p>
+      </div>
+      <a href="{{ url_for('serve_image', image_id=image_id) }}" class="btn" download>⬇️ Télécharger</a>
     </div>
+    <div class="footer">
+      Créé avec <a href="{{ url_for('index') }}">QR Image Platform</a>
+    </div>
+  </div>
 </body>
-</html>'''
+</html>
+'''
 
     with open('templates/view_image.html', 'w', encoding='utf-8') as f:
         f.write(view_html)
@@ -745,7 +594,7 @@ def upload_image():
         print(f"ERREUR UPLOAD: {str(e)}")
         import traceback
         traceback.print_exc()
-        return jsonify({'error': f'Erreur lors du traitement: {str(e)}'}), 500
+        return jsonify({'error': f"Erreur lors du traitement: {str(e)}"}), 500
 
 @app.route('/view/<image_id>')
 def view_image(image_id):
